@@ -1,0 +1,40 @@
+load("@jest_rules_nodejs_issue//:jest.bzl", "jest_test")
+load("@npm_bazel_typescript//:index.bzl", "ts_library")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files([
+    "tsconfig.json",
+    "jest.config.js",
+])
+
+ts_library(
+    name = "lib",
+    srcs = glob(
+        include = ["**/*.ts"],
+        exclude = ["**/*.spec.ts"],
+    ),
+)
+
+ts_library(
+    name = "test_lib",
+    srcs = glob(include = ["**/*.spec.ts"]),
+    tsconfig = "//:tsconfig.json",
+    deps = [
+        ":lib",
+        "@npm//@types/jest",
+    ],
+)
+
+filegroup(
+    name = "test_lib.js",
+    srcs = [":test_lib"],
+    output_group = "es5_sources",
+)
+
+jest_test(
+    name = "test",
+    srcs = [":test_lib.js"],
+    jest_config = "//:jest.config.js",
+    deps = [":lib"],
+)
